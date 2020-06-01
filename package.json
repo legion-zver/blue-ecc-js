@@ -1,0 +1,11 @@
+{
+  "name": "blue-ecc-js",
+  "version": "0.0.1",
+  "main": "index.js",
+  "description": "NodeJS ECC encrypt / decrypt, compatible with swift library https://github.com/IBM-Swift/BlueECC, only prime256v1",
+  "author": "Alexander Garin",
+  "license": "MIT",
+  "dependencies": {
+    "ec-key": "^0.0.4"
+  }
+}
