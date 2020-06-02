@@ -26,10 +26,10 @@ console.log('keys:', keys);
 //  private: <Buffer fc 69 17 aa e6 9e 64 11 f6 89 0c 70 08 10 bd 3b 7a b0 95 a0 9c ef d1 4d 19 1c 57 cc 33 b3 cd 02>
 // }
 
-const enc = ecc.encrypt(keys.private, keys.public, "hello world");
+const enc = ecc.encrypt(keys.public, "hello world");
 console.log('enc:', enc);
 // -> enc: BNbPDdHqW1RNDglfWLdxWnTwCuAelHe5ZIuF8q5Yt12fuBp6O0KFkOwREyRGcIiMgOju5i91Kl9ggDQ9yYE4TjdE8b9fdDAW7U0tZhZJfeoOcU65KRDZrHIlrdA=
 
-const dec = ecc.decrypt(keys.private, keys.public, enc);
+const dec = ecc.decrypt(keys.private, enc);
 console.log('dec:', dec);
 // -> dec: hello world

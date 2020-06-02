@@ -19,18 +19,15 @@ const algorithm = "aes-128-gcm";
 module.exports.generateKeys = function() {
 	// noinspection JSUnresolvedFunction,JSUnresolvedVariable
 	const key = ECKey.createECKey(curve),
-		privatePem = key.toBuffer("pem"),
-		publicPem = new ECKey({
-			publicKey: key.publicCodePoint,
-			curve: curve,
-		}).toBuffer("pem");
+		privatePem = key.toString("rfc5915"),
+		publicPem = key.asPublicECKey().toString("pem");
 	// noinspection JSValidateTypes,SpellCheckingInspection,JSUnresolvedVariable
 	return {
 		pems: {
-			public: publicPem.toString(),
-			private: privatePem.toString(),
-			publicBase64: publicPem.toString('base64'),
-			privateBase64: privatePem.toString('base64'),
+			public: publicPem,
+			private: privatePem,
+			publicBase64: Buffer.from(publicPem, 'utf8').toString('base64'),
+			privateBase64: Buffer.from(privatePem, 'utf8').toString('base64'),
 		},
 		public: key.publicCodePoint,
 		private: key.d,
@@ -58,16 +55,16 @@ module.exports.extractKeyData = function(key, format = "pem", isBase64 = false) 
 /**
  * ECC Decrypt data
  *
- * @param {string | Buffer} privateKey - string in base64
- * @param {string | Buffer} publicKey - string in base64
- * @param {string | Buffer} data - string in base64
+ * @param privateKey - string in base64 or Buffer
+ * @param data - string in base64
  *
  * @returns {string} base64
  */
-module.exports.decrypt = function (privateKey, publicKey, data) {
+module.exports.decrypt = function (privateKey, data) {
+	privateKey = typeof privateKey === 'string' ? Buffer.from(privateKey, 'base64') : privateKey;
 	const ecKey = new ECKey({
-		privateKey: typeof privateKey === 'string' ? Buffer.from(privateKey, 'base64') : privateKey,
-		publicKey: typeof publicKey === 'string' ? Buffer.from(publicKey, 'base64') : publicKey,
+		publicKey: crypto.createECDH(curve).setPrivateKey(privateKey).getPublicKey(),
+		privateKey,
 		curve,
 	});
 	const ecdh = ecKey.createECDH(),
@@ -104,25 +101,20 @@ module.exports.decrypt = function (privateKey, publicKey, data) {
 /**
  * ECC Encrypt data
  *
- * @param {string | Buffer} privateKey - string in base64
- * @param {string | Buffer} publicKey - string in base64
+ * @param publicKey - string in base64 or Buffer
  * @param {string} data - string in utf8
  *
  * @returns {string} base64
  */
-module.exports.encrypt = function (privateKey, publicKey, data) {
-	const ecKey = new ECKey({
-		privateKey: typeof privateKey === 'string' ? Buffer.from(privateKey, 'base64') : privateKey,
-		publicKey: typeof publicKey === 'string' ? Buffer.from(publicKey, 'base64') : publicKey,
-		curve,
-	});
-	const ecdh = ecKey.createECDH();
+module.exports.encrypt = function (publicKey, data) {
+	const ephemeralKey = ECKey.createECKey(curve);
+	const ecdh = ephemeralKey.createECDH();
 	
 	// INFO: Generate an ephemeral EC key pair
-	const ephemeralPublicKey = ECKey.createECKey(curve).createECDH().getPublicKey();
+	const ephemeralPublicKey = ecdh.getPublicKey();
 	
 	// INFO: Use ECDH of your EC pair to generate a symmetric key
-	const symKey = ecdh.computeSecret(ephemeralPublicKey);
+	const symKey = ecdh.computeSecret(publicKey);
 	
 	// INFO: Use SHA256 ANSI x9.63 Key Derivation Function with the ephemeral public key to generate a 32 byte key
 	const preHashKey = Buffer.concat([

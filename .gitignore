@@ -118,3 +118,4 @@ dist
 .yarn/build-state.yml
 .pnp.*
 
+yarn.lock
