@@ -40,6 +40,8 @@ module.exports.generateKeys = function() {
  * @param {string} key
  * @param {string} format
  * @param {boolean} isBase64
+ *
+ * @return {string}
  */
 module.exports.extractKeyData = function(key, format = "pem", isBase64 = false) {
 	if (isBase64) {
@@ -53,12 +55,12 @@ module.exports.extractKeyData = function(key, format = "pem", isBase64 = false) 
 }
 
 /**
- * ECC Decrypt data
+ * Decrypt data
  *
  * @param privateKey - string in base64 or Buffer
  * @param data - string in base64
  *
- * @returns {string} base64
+ * @returns {string}
  */
 module.exports.decrypt = function (privateKey, data) {
 	privateKey = typeof privateKey === 'string' ? Buffer.from(privateKey, 'base64') : privateKey;
@@ -69,7 +71,7 @@ module.exports.decrypt = function (privateKey, data) {
 	});
 	const ecdh = ecKey.createECDH(),
 		encrypted = typeof data === 'string' ? Buffer.from(data, 'base64') : data
-	
+
 	// INFO parts data from data
 	// noinspection SpellCheckingInspection
 	const ephemeralPublicKey = encrypted.slice(0, 65),
@@ -81,25 +83,25 @@ module.exports.decrypt = function (privateKey, data) {
 			ephemeralPublicKey,
 		]),
 		tag = encrypted.slice(-16);
-	
+
 	// INFO: Use SHA256 ANSI x9.63 Key Derivation Function with the ephemeral public key to generate a 32 byte key
 	const hashedKey = crypto.createHash("sha256").update(preHashKey).digest();
-	
+
 	// INFO: Use the second 16 bytes as the initialization vector (IV)
 	const aesKey = hashedKey.slice(0, 16);
-	
+
 	// INFO: Use the second 16 bytes as the initialization vector (IV)
 	const iv = hashedKey.slice(-16);
-	
+
 	// INFO: Use aes_128_gcm to decrypt
 	const cipher = crypto.createDecipheriv(algorithm, aesKey, iv, {authTagLength: 16});
 	cipher.setAuthTag(tag);
-	
+
 	return Buffer.concat([cipher.update(ciphertext), cipher.final()]).toString();
 }
 
 /**
- * ECC Encrypt data
+ * Encrypt data
  *
  * @param publicKey - string in base64 or Buffer
  * @param {string} data - string in utf8
@@ -109,13 +111,13 @@ module.exports.decrypt = function (privateKey, data) {
 module.exports.encrypt = function (publicKey, data) {
 	const ephemeralKey = ECKey.createECKey(curve);
 	const ecdh = ephemeralKey.createECDH();
-	
+
 	// INFO: Generate an ephemeral EC key pair
 	const ephemeralPublicKey = ecdh.getPublicKey();
-	
+
 	// INFO: Use ECDH of your EC pair to generate a symmetric key
 	const symKey = ecdh.computeSecret(publicKey);
-	
+
 	// INFO: Use SHA256 ANSI x9.63 Key Derivation Function with the ephemeral public key to generate a 32 byte key
 	const preHashKey = Buffer.concat([
 		symKey,
@@ -123,13 +125,13 @@ module.exports.encrypt = function (publicKey, data) {
 		ephemeralPublicKey,
 	])
 	const hashedKey = crypto.createHash("sha256").update(preHashKey).digest();
-	
+
 	// INFO: Use the second 16 bytes as the initialization vector (IV)
 	const aesKey = hashedKey.slice(0, 16);
-	
+
 	// INFO: Use the second 16 bytes as the initialization vector (IV)
 	const iv = hashedKey.slice(-16);
-	
+
 	// INFO: Use aes_128_gcm to encrypt the plaintext and generate a 16 byte GCM tag
 	// noinspection SpellCheckingInspection
 	const cipher = crypto.createCipheriv(algorithm, aesKey, iv),
@@ -137,6 +139,6 @@ module.exports.encrypt = function (publicKey, data) {
 		secondChunk = cipher.final(),
 		tag = cipher.getAuthTag(),
 		ciphertext = Buffer.concat([firstChunk, secondChunk]);
-	
+
 	return Buffer.concat([ephemeralPublicKey, ciphertext, tag]).toString('base64');
 }

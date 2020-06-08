@@ -7,5 +7,8 @@
   "license": "MIT",
   "dependencies": {
     "ec-key": "^0.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.11"
   }
 }
