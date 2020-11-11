@@ -21,6 +21,11 @@ export interface Keys {
 export function generateKeys(): Keys;
 
 /**
+ * Get public key from private key
+ */
+export function getPublicKey(privateKey: Buffer | string): Buffer;
+
+/**
  * Extract base64 key from pem/pemBase64 string
  */
 export function extractKeyData(key: string, format?: string, isBase64?: boolean): string

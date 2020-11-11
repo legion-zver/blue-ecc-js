@@ -35,6 +35,17 @@ module.exports.generateKeys = function() {
 }
 
 /**
+ * @param privateKey - string in base64 or Buffer
+ *
+ * @return {Buffer}
+ */
+module.exports.getPublicKey = function (privateKey) {
+	return crypto.createECDH(curve).setPrivateKey(
+		typeof privateKey === 'string' ? Buffer.from(privateKey, 'base64') : privateKey
+	).getPublicKey();
+}
+
+/**
  * Extract base64 key from pem/pemBase64 string
  *
  * @param {string} key
