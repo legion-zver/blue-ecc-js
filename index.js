@@ -10,6 +10,7 @@ const ECKey = require("ec-key");
 
 const curve = "prime256v1";
 const algorithm = "aes-128-gcm";
+const signAlgorithm = "RSA-SHA256";
 
 /**
  * Generate keys
@@ -152,4 +153,30 @@ module.exports.encrypt = function (publicKey, data) {
 		ciphertext = Buffer.concat([firstChunk, secondChunk]);
 
 	return Buffer.concat([ephemeralPublicKey, ciphertext, tag]).toString('base64');
+}
+
+module.exports.sign = function (privateKey, data) {
+	const ecdh = crypto.createECDH(curve);
+	ecdh.setPrivateKey(typeof privateKey === 'string' ? Buffer.from(privateKey, 'base64') : privateKey);
+	const key = new ECKey({
+		privateKey: ecdh.getPrivateKey(),
+		publicKey: ecdh.getPublicKey(),
+		curve: curve
+	});
+	const signer = crypto.createSign(signAlgorithm)
+	signer.update(typeof data === 'string' ? Buffer.from(data, "utf8") : data)
+	return signer.sign(key.toString("rfc5915"), 'base64')
+}
+
+module.exports.verify = function (publicKey, data, signature) {
+	const key = new ECKey({
+		publicKey: typeof publicKey === 'string' ? Buffer.from(publicKey, 'base64') : publicKey,
+		curve: curve
+	});
+	const verifier = crypto.createVerify(signAlgorithm);
+	verifier.update(typeof data === 'string' ? Buffer.from(data, "utf8") : data);
+	return verifier.verify(
+		key.asPublicECKey().toString('pem'),
+		typeof signature === 'string' ? Buffer.from(signature, 'base64') : signature,
+	)
 }

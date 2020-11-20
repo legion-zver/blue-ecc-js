@@ -24,6 +24,11 @@ console.log('enc:', enc);
 const dec = ecc.decrypt(privateKey, "BDAVhzTbf2XVlPFPcZEtpubR1Vbt8T/LxS2W4vCeQ+CoiT070t0AcGK2e7s7Wisw1rOBgXhLNhR6IM+xY61XVPSrKNgxHLAzVFTJwvOw1isOJ1ooodf7pw==");
 console.log('dec:', dec);
 
+const sign = ecc.sign(privateKey, "hello world")
+console.log('\nsign (hello world):', sign);
+
+console.log('verify (hello world):', ecc.verify(publicKey, "hello world", sign));
+
 /*
 enc: BFCcmlGDU+I35+94Cj9w8wXyGb6AAM6Y1+QYgvo+yac0O2Y+OS2Fu2q6GI/7UUX4wXcgJHWSlEizNuCWvaXZBdsxGo13aIcNHm0X8008muCO9OpKs4z1+j4uQkg=
 dec: welcome

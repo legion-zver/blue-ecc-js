@@ -39,3 +39,13 @@ export function decrypt(privateKey: Buffer | string, data: Buffer | string): str
  * Encrypt data
  */
 export function encrypt(publicKey: Buffer | string, data: string): string
+
+/**
+ * Sign
+ */
+export function sign(privateKey: Buffer | string, data: Buffer | string): string;
+
+/**
+ * Verify
+ */
+export function verify(publicKey: Buffer | string, data: Buffer | string, signature: Buffer | string): boolean;
