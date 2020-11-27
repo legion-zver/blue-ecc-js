@@ -5,8 +5,6 @@
 
 "use strict";
 
-import {getPublicKey} from "./index";
-
 const crypto = require("crypto");
 const ECKey = require("ec-key");
 
@@ -42,11 +40,13 @@ module.exports.generateKeys = function() {
  *
  * @return {Buffer}
  */
-module.exports.getPublicKey = function (privateKey) {
+function getPublicKey(privateKey) {
 	return crypto.createECDH(curve).setPrivateKey(
 		typeof privateKey === 'string' ? Buffer.from(privateKey, 'base64') : privateKey
 	).getPublicKey();
 }
+
+module.exports.getPublicKey = getPublicKey;
 
 /**
  * Extract base64 key from pem/pemBase64 string
