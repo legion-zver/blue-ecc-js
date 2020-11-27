@@ -33,3 +33,5 @@ console.log('verify (hello world):', ecc.verify(publicKey, "hello world", sign))
 enc: BFCcmlGDU+I35+94Cj9w8wXyGb6AAM6Y1+QYgvo+yac0O2Y+OS2Fu2q6GI/7UUX4wXcgJHWSlEizNuCWvaXZBdsxGo13aIcNHm0X8008muCO9OpKs4z1+j4uQkg=
 dec: welcome
  */
+
+console.log('\nnext private key:', ecc.generateKeys().private.toString('base64'));

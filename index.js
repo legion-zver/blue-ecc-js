@@ -5,6 +5,8 @@
 
 "use strict";
 
+import {getPublicKey} from "./index";
+
 const crypto = require("crypto");
 const ECKey = require("ec-key");
 
@@ -77,7 +79,7 @@ module.exports.extractKeyData = function(key, format = "pem", isBase64 = false) 
 module.exports.decrypt = function (privateKey, data) {
 	privateKey = typeof privateKey === 'string' ? Buffer.from(privateKey, 'base64') : privateKey;
 	const ecKey = new ECKey({
-		publicKey: crypto.createECDH(curve).setPrivateKey(privateKey).getPublicKey(),
+		publicKey: getPublicKey(privateKey),
 		privateKey,
 		curve,
 	});
@@ -128,7 +130,7 @@ module.exports.encrypt = function (publicKey, data) {
 	const ephemeralPublicKey = ecdh.getPublicKey();
 
 	// INFO: Use ECDH of your EC pair to generate a symmetric key
-	const symKey = ecdh.computeSecret(publicKey);
+	const symKey = ecdh.computeSecret(typeof publicKey === 'string' ? Buffer.from(publicKey, 'base64') : publicKey);
 
 	// INFO: Use SHA256 ANSI x9.63 Key Derivation Function with the ephemeral public key to generate a 32 byte key
 	const preHashKey = Buffer.concat([
